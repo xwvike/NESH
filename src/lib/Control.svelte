@@ -12,6 +12,7 @@
     WIDTH,
     HEIGHT,
   } from '../config.ts'
+  import clickFeedback from '../func/ClickFeedback.Ts'
   import { KeyTrigger, TouchTrigger } from '../event.ts'
   import directionImg from '../assets/img/18.png'
   import buttonImg from '../assets/img/button.png'
@@ -121,6 +122,7 @@
     diff.forEach((key) => {
       let include = activeKey.includes(key)
       if (include) {
+        clickFeedback.feedback()
         KeyTrigger.next({ key, type: 'keydown' })
       } else {
         KeyTrigger.next({ key, type: 'keyup' })

@@ -14,6 +14,9 @@ devDependencies:
   autoprefixer:
     specifier: ^10.4.20
     version: 10.4.20(postcss@8.4.41)
+  jsnes:
+    specifier: git://github.com/bfirsh/jsnes.git
+    version: github.com/bfirsh/jsnes/d8021d0336cb5c1cf924cd660ecf816bec15c11a
   postcss:
     specifier: ^8.4.41
     version: 8.4.41
@@ -1736,4 +1739,10 @@ packages:
     resolution: {integrity: sha512-2wWLbGbYDiSqqIKoPjar3MPgB94ErzCtrNE1FdqGuaO0pi2JGjmE8aW8TDZwzU7vuxcGRdL/4gPQwQ7hD5AMSw==}
     engines: {node: '>= 14'}
     hasBin: true
+    dev: true
+
+  github.com/bfirsh/jsnes/d8021d0336cb5c1cf924cd660ecf816bec15c11a:
+    resolution: {tarball: https://codeload.github.com/bfirsh/jsnes/tar.gz/d8021d0336cb5c1cf924cd660ecf816bec15c11a}
+    name: jsnes
+    version: 1.2.1
     dev: true

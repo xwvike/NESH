@@ -28,6 +28,7 @@
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.41",
     "prettier": "3.3.3",
+    "jsnes": "git://github.com/bfirsh/jsnes.git",
     "prettier-plugin-svelte": "^3.2.6",
     "rxjs": "^7.8.1",
     "svelte": "^4.2.18",
