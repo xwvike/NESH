@@ -3,6 +3,16 @@
   import Control from './lib/Control.svelte'
   import Contact from './lib/Contact.svelte'
   import { PADDING, WIDTH, HEIGHT } from './config.ts'
+  import { KeyTrigger } from './event.ts'
+  import ClickFeedback from './func/ClickFeedback'
+
+  KeyTrigger.subscribe({
+    next: (e) => {
+      if (e.type === 'keydown') {
+        ClickFeedback.feedback()
+      }
+    },
+  })
 </script>
 
 <div

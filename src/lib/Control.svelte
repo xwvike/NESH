@@ -122,7 +122,6 @@
     diff.forEach((key) => {
       let include = activeKey.includes(key)
       if (include) {
-        clickFeedback.feedback()
         KeyTrigger.next({ key, type: 'keydown' })
       } else {
         KeyTrigger.next({ key, type: 'keyup' })
