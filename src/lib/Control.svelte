@@ -12,7 +12,7 @@
     WIDTH,
     HEIGHT,
   } from '../config.ts'
-  import clickFeedback from '../func/ClickFeedback.Ts'
+  import clickFeedback from '../func/ClickFeedback.js'
   import { KeyTrigger, TouchTrigger } from '../event.ts'
   import directionImg from '../assets/img/18.png'
   import buttonImg from '../assets/img/button.png'
@@ -346,7 +346,6 @@
 </script>
 
 <div
-  on:click={() => KeyTrigger.next({ key: 'control' })}
   style:width={CONTROLS_WIDTH + 'px'}
   style:height={CONTROLS_HEIGHT + 'px'}
   style:padding={PADDING + 'px'}

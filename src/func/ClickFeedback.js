@@ -2,31 +2,31 @@ import dot from '../assets/dot.mp3'
 import { DEBUG } from '../config'
 
 class ClickFeedback {
-  private readonly isVibrationSupported: boolean
-  private readonly os: string = 'unknown'
-  private vibratePattern = [50]
-  private buffer: AudioBuffer | undefined
-  private readonly context: AudioContext | undefined
+  isVibrationSupported = false
+  os = 'unknown'
+  vibratePattern = [50]
+  buffer
+  context
   constructor() {
     this.isVibrationSupported = 'vibrate' in navigator
-    const ua = navigator.userAgent || navigator.vendor || (window as any)?.opera
-    if (/iPad|iPhone|iPod/.test(ua) && !(window as any)?.MSStream) this.os = 'ios'
+    const ua = navigator.userAgent || navigator.vendor || window?.opera
+    if (/iPad|iPhone|iPod/.test(ua) && !window?.MSStream) this.os = 'ios'
     if (/android/i.test(ua)) this.os = 'android'
-    this.context = new (window.AudioContext || (window as any).webkitAudioContext)()
+    this.context = new (window.AudioContext || window.webkitAudioContext)()
   }
-  private async loadAudio() {
+  async loadAudio() {
     if (!this.buffer) {
       const response = await fetch(dot)
       const arrayBuffer = await response.arrayBuffer()
-      this.buffer = await this.context!.decodeAudioData(arrayBuffer)
+      this.buffer = await this.context.decodeAudioData(arrayBuffer)
     }
     return this.buffer
   }
-  private vibrate() {
+  vibrate() {
     DEBUG && console.log('vibrate')
     navigator.vibrate(this.vibratePattern)
   }
-  private async playAudio() {
+  async playAudio() {
     DEBUG && console.log('play audio')
     if (this.context?.state === 'suspended') {
       await this.context.resume()
@@ -40,7 +40,7 @@ class ClickFeedback {
       source.start(0)
     }
   }
-  public async feedback() {
+  async feedback() {
     DEBUG && console.log('click feedback')
     if (this.os === 'ios') {
       await this.playAudio()
