@@ -8,15 +8,15 @@
   onMount(async () => {
     ctx = canvas.getContext('2d')
     let rom = await loadBinary('/roms/mxt.nes')
-    emulator = new Emulator()
+    emulator = new Emulator({
+      screen:ctx
+    })
     emulator.loadRom(rom)
-    render()
+    emulator.start()
+    setTimeout(_=>{
+      emulator.stop()
+    },1000*10)
   })
-  const render = () => {
-    requestAnimationFrame(render)
-    emulator.frame()
-    ctx.drawImage(emulator.getFrame(), 0, 0)
-  }
 </script>
 
 <canvas width={NES_WIDTH} height={NES_HEIGHT} bind:this={canvas} class="w-full h-full"></canvas>

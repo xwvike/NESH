@@ -1,3 +1,4 @@
+const FPS = 60.098
 const NES_WIDTH = 256
 const NES_HEIGHT = 240
 const RATIO = NES_HEIGHT / NES_WIDTH
@@ -19,6 +20,7 @@ const BUTTON_HEIGHT = DIRECTION_WIDTH * 0.45
 const DEBUG = true
 
 export {
+  FPS,
   CONTROLS_HEIGHT,
   CONTROLS_WIDTH,
   NES_WIDTH,

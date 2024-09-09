@@ -1,6 +1,6 @@
 import { NES, Controller } from 'jsnes'
 import RingBuffer from 'ringbufferjs'
-import { NES_WIDTH, NES_HEIGHT } from '../config.ts'
+import { NES_WIDTH, NES_HEIGHT, FPS } from '../config.ts'
 import { KeyTrigger } from '../event.ts'
 
 class Audio {
@@ -43,7 +43,6 @@ class Video {
   writeBuffer() {
     this.imageData.data.set(this.buffer_u8)
     this.ctx.putImageData(this.imageData, 0, 0)
-    requestAnimationFrame(this.writeBuffer.bind(this))
   }
   getCanvas() {
     return this.canvas
@@ -51,12 +50,24 @@ class Video {
 }
 
 export class Emulator {
-  constructor() {
+  constructor(props) {
+    this.running = true
+    this.interval = 1e3 / FPS
+    this.lastFrameTime = false
+    this.screen = props.screen
+    this._requestID = null
     this.Audio = new Audio({
       onBufferUnderrun: () => {
         console.log(`Buffer overrun`)
       },
     })
+    this.start = this.start.bind(this)
+    this.stop = this.stop.bind(this)
+    this.loadRom = this.loadRom.bind(this)
+    this._requestAnimationFrame = this._requestAnimationFrame.bind(this)
+    this.generateFrame = this.generateFrame.bind(this)
+    this.writeFrame = this.writeFrame.bind(this)
+    this.onanimationframe = this.onanimationframe.bind(this)
     this.Video = new Video()
     this.nes = new NES({
       onFrame: this.Video.setBuffer.bind(this.Video),
@@ -95,12 +106,44 @@ export class Emulator {
 
   loadRom(rom) {
     this.nes.loadROM(rom)
-    this.Video.writeBuffer()
   }
-  frame() {
+  generateFrame(){
     this.nes.frame()
+    this.lastFrameTime += this.interval;
   }
-  getFrame() {
-    return this.Video.getCanvas()
+  writeFrame(){
+    this.Video.writeBuffer()
+    this.screen.drawImage(this.Video.getCanvas(),0,0)
+  }
+  start() {
+    this.running = true
+    this._requestAnimationFrame()
+  }
+  stop() {
+    this.running = false;
+    if (this._requestID) window.cancelAnimationFrame(this._requestID);
+    this.lastFrameTime = false;
+  }
+  _requestAnimationFrame() {
+    this._requestID = window.requestAnimationFrame(this.onanimationframe)
+  }
+  onanimationframe(time) {
+    this._requestAnimationFrame()
+    let excess = time % this.interval
+    let newFrameTime = time - excess
+    if (!this.lastFrameTime) {
+      this.lastFrameTime = newFrameTime
+      return
+    }
+    let numFrames = Math.round((newFrameTime - this.lastFrameTime) / this.interval)
+    if (numFrames === 0) return;
+    this.generateFrame()
+    this.writeFrame()
+    let timeToNextFrame = this.interval - excess;
+    for (let i = 1; i < numFrames; i++) {
+      setTimeout(() => {
+        this.generateFrame();
+      }, (i * timeToNextFrame) / numFrames);
+    }
   }
 }
