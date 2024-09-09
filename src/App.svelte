@@ -5,9 +5,6 @@
   import { PADDING, WIDTH, HEIGHT } from './config.ts'
   import { KeyTrigger } from './event.ts'
   import ClickFeedback from './func/ClickFeedback'
-  import { injectSpeedInsights } from '@vercel/speed-insights';
-
-  injectSpeedInsights();
 
   KeyTrigger.subscribe({
     next: (e) => {
