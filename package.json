@@ -25,6 +25,7 @@
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^3.1.1",
     "@tsconfig/svelte": "^5.0.4",
+    "@vercel/speed-insights": "^1.0.12",
     "autoprefixer": "^10.4.20",
     "jsnes": "git://github.com/bfirsh/jsnes.git",
     "postcss": "^8.4.41",

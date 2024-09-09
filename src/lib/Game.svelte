@@ -14,7 +14,7 @@
     emulator.loadRom(rom)
     emulator.start()
     setTimeout(_=>{
-      emulator.stop()
+      // emulator.stop()
     },1000*10)
   })
 </script>
