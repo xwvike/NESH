@@ -84,18 +84,15 @@ export class Emulator {
       select: Controller.BUTTON_SELECT,
       start: Controller.BUTTON_START,
     }
-    KeyTrigger.subscribe({
-      next: (e) => {
-        let code = this.getButtonCode(e.key)
-        if (e.type === 'keydown') {
-          this.nes.buttonDown(1, code)
-        } else {
-          this.nes.buttonUp(1, code)
-        }
-      },
-    })
   }
-
+  onEvent(e){
+    let code = this.getButtonCode(e.key)
+    if (e.type === 'keydown') {
+      this.nes.buttonDown(1, code)
+    } else {
+      this.nes.buttonUp(1, code)
+    }
+  }
   getButtonCode(key) {
     let code = -1
     if (this.codeMap[key] !== undefined) {
