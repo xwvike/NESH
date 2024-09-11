@@ -17,7 +17,7 @@ const DIRECTION_HEIGHT = CONTROLS_WIDTH * 0.42
 const BUTTON_WIDTH = DIRECTION_WIDTH * 0.45
 const BUTTON_HEIGHT = DIRECTION_WIDTH * 0.45
 
-const DEBUG = true
+const DEBUG = false
 
 export {
   FPS,

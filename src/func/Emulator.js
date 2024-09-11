@@ -1,22 +1,56 @@
 import { NES, Controller } from 'jsnes'
-import RingBuffer from 'ringbufferjs'
 import { NES_WIDTH, NES_HEIGHT, FPS } from '../config.ts'
-import { KeyTrigger } from '../event.ts'
 
 class Audio {
   constructor({ onBufferUnderrun }) {
     this.onBufferUnderrun = onBufferUnderrun
-    this.bufferSize = 8192
-    this.buffer = new RingBuffer(this.bufferSize * 2, Uint8Array)
+    this.audioContext = null
+    this.workletNode = null
   }
-  getSampleRate() {
+
+  async start() {
     if (!(window.AudioContext || window.webkitAudioContext)) {
-      return 44100
+      console.error('Web Audio API is not supported in this browser')
+      return
     }
-    let myAudioContext = new (window.AudioContext || window.webkitAudioContext)()
-    let sampleRate = myAudioContext.sampleRate
-    myAudioContext.close().then()
-    return sampleRate
+
+    this.audioContext = new (window.AudioContext || window.webkitAudioContext)()
+
+    try {
+      await this.audioContext.audioWorklet.addModule('/js/audio-processor.js')
+      this.workletNode = new AudioWorkletNode(this.audioContext, 'audio-processor')
+
+      this.workletNode.port.onmessage = (event) => {
+        if (event.data.type === 'bufferUnderrun' && this.onBufferUnderrun) {
+          this.onBufferUnderrun(event.data.size, event.data.needed)
+        }
+      }
+
+      this.workletNode.connect(this.audioContext.destination)
+    } catch (error) {
+      console.error('Error setting up AudioWorklet:', error)
+    }
+  }
+
+  stop() {
+    if (this.workletNode) {
+      this.workletNode.disconnect()
+      this.workletNode = null
+    }
+    if (this.audioContext) {
+      this.audioContext.close().catch(console.error)
+      this.audioContext = null
+    }
+  }
+
+  writeSample(left, right) {
+    if (this.workletNode) {
+      this.workletNode.port.postMessage({ type: 'writeSample', left, right })
+    }
+  }
+
+  getSampleRate() {
+    return this.audioContext ? this.audioContext.sampleRate : 44100
   }
 }
 class Video {
@@ -57,8 +91,13 @@ export class Emulator {
     this.screen = props.screen
     this._requestID = null
     this.Audio = new Audio({
-      onBufferUnderrun: () => {
-        console.log(`Buffer overrun`)
+      onBufferUnderrun: (actualSize, desiredSize) => {
+        if (!this.running) return
+        this.generateFrame()
+        if (actualSize < desiredSize) {
+          console.log('Still buffer underrun, running a second frame')
+          this.generateFrame()
+        }
       },
     })
     this.start = this.start.bind(this)
@@ -73,6 +112,7 @@ export class Emulator {
       onFrame: this.Video.setBuffer.bind(this.Video),
       onStatusUpdate: console.log,
       sampleRate: this.Audio.getSampleRate(),
+      onAudioSample: this.Audio.writeSample.bind(this.Audio),
     })
     this.codeMap = {
       up: Controller.BUTTON_UP,
@@ -85,7 +125,7 @@ export class Emulator {
       start: Controller.BUTTON_START,
     }
   }
-  onEvent(e){
+  onEvent(e) {
     let code = this.getButtonCode(e.key)
     if (e.type === 'keydown') {
       this.nes.buttonDown(1, code)
@@ -104,22 +144,24 @@ export class Emulator {
   loadRom(rom) {
     this.nes.loadROM(rom)
   }
-  generateFrame(){
+  generateFrame() {
     this.nes.frame()
-    this.lastFrameTime += this.interval;
+    this.lastFrameTime += this.interval
   }
-  writeFrame(){
+  writeFrame() {
     this.Video.writeBuffer()
-    this.screen.drawImage(this.Video.getCanvas(),0,0)
+    this.screen.drawImage(this.Video.getCanvas(), 0, 0)
   }
-  start() {
+  async start() {
+    await this.Audio.start()
     this.running = true
     this._requestAnimationFrame()
   }
   stop() {
-    this.running = false;
-    if (this._requestID) window.cancelAnimationFrame(this._requestID);
-    this.lastFrameTime = false;
+    this.Audio.stop()
+    this.running = false
+    if (this._requestID) window.cancelAnimationFrame(this._requestID)
+    this.lastFrameTime = false
   }
   _requestAnimationFrame() {
     this._requestID = window.requestAnimationFrame(this.onanimationframe)
@@ -133,14 +175,17 @@ export class Emulator {
       return
     }
     let numFrames = Math.round((newFrameTime - this.lastFrameTime) / this.interval)
-    if (numFrames === 0) return;
+    if (numFrames === 0) return
     this.generateFrame()
     this.writeFrame()
-    let timeToNextFrame = this.interval - excess;
+    let timeToNextFrame = this.interval - excess
     for (let i = 1; i < numFrames; i++) {
-      setTimeout(() => {
-        this.generateFrame();
-      }, (i * timeToNextFrame) / numFrames);
+      setTimeout(
+        () => {
+          this.generateFrame()
+        },
+        (i * timeToNextFrame) / numFrames
+      )
     }
   }
 }
