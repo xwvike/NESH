@@ -20,6 +20,8 @@
   import startImg from '../assets/img/15.png'
   import selectImg from '../assets/img/16.png'
 
+  const EPSILON = 1e-10;
+
   let debug, ctx
 
   let directionButton, bButton, aButton, selectButton, startButton, homeButton
@@ -316,33 +318,57 @@
     }
     return keyName
   }
-  const distance = (x1, y1, x2, y2) => {
-    return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
-  }
-  const isOverlap = (circle, trapezoid) => {
-    let { x: cx, y: cy, r } = circle
 
-    for (let i = 0; i < 4; i++) {
-      let p1 = trapezoid[i]
-      let p2 = trapezoid[(i + 1) % 4]
-      let d = distance(p1.x, p1.y, p2.x, p2.y)
-      let det = (cx - p1.x) * (p2.x - p1.x) + (cy - p1.y) * (p2.y - p1.y)
-      if (det >= 0 && det <= d ** 2) {
-        let perpD = ((p2.y - p1.y) * (cx - p1.x) - (p2.x - p1.x) * (cy - p1.y)) / d
-        if (Math.abs(perpD) <= r) {
-          return true
+  const distance = (x1, y1, x2, y2) => {
+    return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+  };
+
+  const isPointInTrapezoid = (x, y, trapezoid) => {
+    let inside = false;
+    for (let i = 0, j = trapezoid.length - 1; i < trapezoid.length; j = i++) {
+      let xi = trapezoid[i].x, yi = trapezoid[i].y;
+      let xj = trapezoid[j].x, yj = trapezoid[j].y;
+
+      let intersect = ((yi > y) !== (yj > y))
+        && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+      if (intersect) inside = !inside;
+    }
+    return inside;
+  };
+
+  const isOverlap = (circle, trapezoid) => {
+    let { x: cx, y: cy, r } = circle;
+
+    if (isPointInTrapezoid(cx, cy, trapezoid)) {
+      return true;
+    }
+
+    for (let i = 0; i < trapezoid.length; i++) {
+      let p1 = trapezoid[i];
+      let p2 = trapezoid[(i + 1) % trapezoid.length];
+
+      let edgeLength = distance(p1.x, p1.y, p2.x, p2.y);
+      let det = (cx - p1.x) * (p2.x - p1.x) + (cy - p1.y) * (p2.y - p1.y);
+
+      if (det >= 0 && det <= edgeLength ** 2) {
+        let projectionDistance = Math.abs(
+          ((p2.y - p1.y) * (cx - p1.x) - (p2.x - p1.x) * (cy - p1.y)) / edgeLength
+        );
+        if (projectionDistance <= r + EPSILON) {
+          return true;
         }
       }
     }
-    
+
+    // 检查圆是否包含梯形的任何顶点
     for (let p of trapezoid) {
-      if (distance(cx, cy, p.x, p.y) <= r) {
-        return true
+      if (distance(cx, cy, p.x, p.y) <= r + EPSILON) {
+        return true;
       }
     }
 
-    return false
-  }
+    return false;
+  };
 </script>
 
 <div
