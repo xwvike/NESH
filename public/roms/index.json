@@ -3,24 +3,28 @@
     "id": "mxt",
     "title": "马戏团",
     "rom": "/roms/mxt/rom.nes",
-    "cover": ""
+    "cover": "/roms/mxt/cover.jpg",
+    "description": "/roms/mxt/description.txt"
   },
   {
     "id": "rx",
     "title": "热血物语",
     "rom": "/roms/rx/rom.nes",
-    "cover": ""
+    "cover": "/roms/rx/cover.jpg",
+    "description": "/roms/rx/description.txt"
   },
   {
     "id": "smtz",
     "title": "三目童子",
     "rom": "/roms/smtz/rom.nes",
-    "cover": ""
+    "cover": "/roms/smtz/cover.jpg",
+    "description": "/roms/smtz/description.txt"
   },
   {
     "id": "wzq",
     "title": "五子棋",
     "rom": "/roms/wzq/rom.nes",
-    "cover": ""
+    "cover": "/roms/wzq/cover.jpg",
+    "description": "/roms/wzq/description.txt"
   }
 ]
