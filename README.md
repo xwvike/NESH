@@ -18,11 +18,6 @@ pnpm dev
 ```
 访问 http://localhost:5173
 
-## 目录结构（节选）
-- `src/` 应用源码（Svelte 组件、模拟器逻辑）
-- `public/roms/` ROM 资源及元数据
-- `public/js/audio-processor.js` 音频 Worklet 处理器
-
 ## ROM 配置
 - 在 `public/roms/index.json` 中新增条目：
 ```json
