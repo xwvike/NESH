@@ -33,7 +33,7 @@
         url: list[current]?.rom,
         action: 'start game',
       })
-    } else if (e.key === 'select') {
+    } else if (e.key === 'down') {
       ScreenTrigger.next({
         type: 'detail',
         ...list[current],
