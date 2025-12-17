@@ -4,12 +4,9 @@
   import { KeyTrigger, ScreenTrigger } from '../event.ts'
   import Game from './Game.svelte'
   import Home from './Home.svelte'
-  import GameDetail from './GameDetail.svelte'
   let home, game
-  let detail
   let mode = 'home'
-  let left = '0px'
-  let detailItem = null
+  let left = ''
   onMount(() => {
     KeyTrigger.subscribe({
       next: (e) => {
@@ -17,8 +14,6 @@
           home.onEvent(e)
         } else if (mode === 'game') {
           game.onEvent(e)
-        } else if (mode === 'detail') {
-          detail.onEvent(e)
         }
       },
     })
@@ -26,14 +21,10 @@
       next: (e) => {
         mode = e.type
         if (mode === 'game') {
-          left = `-${SCREEN_WIDTH}px`
+          left = `calc(0px - ${SCREEN_WIDTH}px + .25rem)`
           if (e.action === 'start game') {
             game.startGame(e)
           }
-          detailItem = e
-        } else if (mode === 'detail') {
-          detailItem = e
-          left = `-${SCREEN_WIDTH * 2}px`
         } else if (mode === 'home') {
           left = '0px'
         }
@@ -48,27 +39,8 @@
   class="screen p-2 overflow-hidden"
 >
   <div class="flex transition-all" style:transform="translateX({left})">
-    <div
-      class="flex-shrink-0"
-      style:width={SCREEN_WIDTH + 'px'}
-      style:height={SCREEN_HEIGHT + 'px'}
-    >
-      <Home bind:this={home} />
-    </div>
-    <div
-      class="flex-shrink-0"
-      style:width={SCREEN_WIDTH + 'px'}
-      style:height={SCREEN_HEIGHT + 'px'}
-    >
-      <Game bind:this={game} />
-    </div>
-    <div
-      class="flex-shrink-0"
-      style:width={SCREEN_WIDTH + 'px'}
-      style:height={SCREEN_HEIGHT + 'px'}
-    >
-      <GameDetail bind:this={detail} item={detailItem} />
-    </div>
+    <Home bind:this={home} />
+    <Game bind:this={game} />
   </div>
 </div>
 
