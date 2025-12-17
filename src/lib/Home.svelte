@@ -5,7 +5,8 @@
   import { ScreenTrigger } from '../event.ts'
   import ScrollText from './ScrollText.svelte'
 
-  let homewidth, homeheight
+  let homewidth = 0
+  let homeheight = 0
 
   let time = ''
   let left = '1rem'
@@ -13,27 +14,43 @@
   $: {
     let num = current - 1
     num = num <= 0 ? 0 : num
-    left = `calc(1rem - ${num * homeheight * 0.4}px - ${num * 0.75}rem)`
+    const h = homeheight || 0
+    left = `calc(1rem - ${num * h * 0.4}px - ${num * 0.75}rem)`
   }
   let current = 0
-  let list = [
-    { title: '超级玛丽', url: '/roms/MARIO.NES', cover: '' },
-    { title: '马戏团', url: '/roms/mxt.nes', cover: '' },
-    { title: '热血物语', url: '/roms/rx.nes', cover: '' },
-    { title: '三目童子', url: '/roms/smtz.NES', cover: '' },
-    { title: '五子棋', url: '/roms/wzq.nes', cover: '' },
-  ]
+  let list = []
+  let loading = true
   export function onEvent(e) {
+    if (!list.length) return
     if (e.key === 'left') {
       if (e.type === 'keydown') current = (current - 1 + list.length) % list.length
     } else if (e.key === 'right') {
       if (e.type === 'keydown') current = (current + 1) % list.length
     } else if (e.key === 'a') {
-      ScreenTrigger.next({ type: 'game', ...list[current], action: 'start game' })
+      ScreenTrigger.next({
+        type: 'game',
+        ...list[current],
+        url: list[current]?.rom,
+        action: 'start game',
+      })
+    }
+  }
+
+  const fetchList = async () => {
+    try {
+      const res = await fetch('/roms/index.json')
+      if (!res.ok) throw new Error('load rom index failed')
+      list = await res.json()
+    } catch (err) {
+      console.error(err)
+      list = []
+    } finally {
+      loading = false
     }
   }
 
   onMount(() => {
+    fetchList()
     homewidth = home?.getBoundingClientRect().width
     homeheight = home?.getBoundingClientRect().height
     let interval = setInterval(() => {
