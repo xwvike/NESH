@@ -377,6 +377,7 @@
   style:height={CONTROLS_HEIGHT + 'px'}
   style:padding={PADDING + 'px'}
   class="control box-border relative select-none"
+  role="presentation"
   on:contextmenu|preventDefault
   on:touchstart|preventDefault
   on:mousedown|preventDefault
