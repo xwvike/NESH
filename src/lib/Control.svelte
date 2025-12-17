@@ -377,6 +377,9 @@
   style:height={CONTROLS_HEIGHT + 'px'}
   style:padding={PADDING + 'px'}
   class="control box-border relative select-none"
+  on:contextmenu|preventDefault
+  on:touchstart|preventDefault
+  on:mousedown|preventDefault
 >
   {#if DEBUG}
     <canvas
@@ -462,6 +465,14 @@
     background-image: url('../assets/img/17.png');
     background-size: 100% 100%;
     margin: 0 auto;
+    -webkit-touch-callout: none;
+    -webkit-user-drag: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .control img {
+    -webkit-touch-callout: none;
+    -webkit-user-drag: none;
+    -webkit-tap-highlight-color: transparent;
   }
   .beforeTag:before {
     content: Attr(data-key);
