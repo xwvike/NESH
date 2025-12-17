@@ -30,5 +30,53 @@
     "cover": "/roms/wzq/cover.jpg",
     "description": "/roms/wzq/description.txt",
     "screens": ["/roms/wzq/cover.jpg"]
+  },
+  {
+    "id": "contrA",
+    "title": "魂斗罗",
+    "rom": "/roms/CONTRA/CONTRA.NES",
+    "cover": "",
+    "description": "",
+    "screens": []
+  },
+  {
+    "id": "bombman",
+    "title": "炸弹人",
+    "rom": "/roms/BOMBMAN/BOMBMAN.NES",
+    "cover": "",
+    "description": "",
+    "screens": []
+  },
+  {
+    "id": "pacman",
+    "title": "吃豆人",
+    "rom": "/roms/pacman/吃豆.nes",
+    "cover": "",
+    "description": "",
+    "screens": []
+  },
+  {
+    "id": "xq",
+    "title": "中国象棋",
+    "rom": "/roms/xq/中国象棋.nes",
+    "cover": "",
+    "description": "",
+    "screens": []
+  },
+  {
+    "id": "hydbk",
+    "title": "荒野大镖客",
+    "rom": "/roms/hydbk/荒野大镖客.nes",
+    "cover": "",
+    "description": "",
+    "screens": []
+  },
+  {
+    "id": "super-mario-bros-j",
+    "title": "Super Mario Bros (J)",
+    "rom": "/roms/Super Mario Bros (J)/Super Mario Bros (J).nes",
+    "cover": "",
+    "description": "",
+    "screens": []
   }
 ]
