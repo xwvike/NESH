@@ -3,6 +3,7 @@
   import { onMount } from 'svelte'
   import { SCREEN_HEIGHT, SCREEN_WIDTH } from '../config.ts'
   import { ScreenTrigger } from '../event.ts'
+  import ScrollText from './ScrollText.svelte'
 
   let homewidth, homeheight
 
@@ -66,7 +67,9 @@
           >
             <div class="rounded-sm bg-amber-100 w-full h-full"></div>
             {#if index === current}
-              <p class="text-[#ce28ae] absolute -top-7 left-1/2 -translate-x-1/2">{item.title}</p>
+              <div class="text-[#ce28ae] absolute -top-7 left-1/2 -translate-x-1/2 w-full px-1">
+                <ScrollText>{item.title}</ScrollText>
+              </div>
             {/if}
           </div>
         {/each}
