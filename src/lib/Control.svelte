@@ -20,7 +20,7 @@
   import startImg from '../assets/img/15.png'
   import selectImg from '../assets/img/16.png'
 
-  const EPSILON = 1e-10;
+  const EPSILON = 1e-10
 
   let debug, ctx
 
@@ -320,42 +320,43 @@
   }
 
   const distance = (x1, y1, x2, y2) => {
-    return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
-  };
+    return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+  }
 
   const isPointInTrapezoid = (x, y, trapezoid) => {
-    let inside = false;
+    let inside = false
     for (let i = 0, j = trapezoid.length - 1; i < trapezoid.length; j = i++) {
-      let xi = trapezoid[i].x, yi = trapezoid[i].y;
-      let xj = trapezoid[j].x, yj = trapezoid[j].y;
+      let xi = trapezoid[i].x,
+        yi = trapezoid[i].y
+      let xj = trapezoid[j].x,
+        yj = trapezoid[j].y
 
-      let intersect = ((yi > y) !== (yj > y))
-        && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
-      if (intersect) inside = !inside;
+      let intersect = yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi
+      if (intersect) inside = !inside
     }
-    return inside;
-  };
+    return inside
+  }
 
   const isOverlap = (circle, trapezoid) => {
-    let { x: cx, y: cy, r } = circle;
+    let { x: cx, y: cy, r } = circle
 
     if (isPointInTrapezoid(cx, cy, trapezoid)) {
-      return true;
+      return true
     }
 
     for (let i = 0; i < trapezoid.length; i++) {
-      let p1 = trapezoid[i];
-      let p2 = trapezoid[(i + 1) % trapezoid.length];
+      let p1 = trapezoid[i]
+      let p2 = trapezoid[(i + 1) % trapezoid.length]
 
-      let edgeLength = distance(p1.x, p1.y, p2.x, p2.y);
-      let det = (cx - p1.x) * (p2.x - p1.x) + (cy - p1.y) * (p2.y - p1.y);
+      let edgeLength = distance(p1.x, p1.y, p2.x, p2.y)
+      let det = (cx - p1.x) * (p2.x - p1.x) + (cy - p1.y) * (p2.y - p1.y)
 
       if (det >= 0 && det <= edgeLength ** 2) {
         let projectionDistance = Math.abs(
           ((p2.y - p1.y) * (cx - p1.x) - (p2.x - p1.x) * (cy - p1.y)) / edgeLength
-        );
+        )
         if (projectionDistance <= r + EPSILON) {
-          return true;
+          return true
         }
       }
     }
@@ -363,19 +364,19 @@
     // 检查圆是否包含梯形的任何顶点
     for (let p of trapezoid) {
       if (distance(cx, cy, p.x, p.y) <= r + EPSILON) {
-        return true;
+        return true
       }
     }
 
-    return false;
-  };
+    return false
+  }
 </script>
 
 <div
   style:width={CONTROLS_WIDTH + 'px'}
   style:height={CONTROLS_HEIGHT + 'px'}
   style:padding={PADDING + 'px'}
-  class="control box-border relative"
+  class="control box-border relative select-none"
 >
   {#if DEBUG}
     <canvas
@@ -392,6 +393,8 @@
     bind:this={selectButton}
     src={selectImg}
     alt="select button"
+    draggable="false"
+    on:contextmenu={(e) => e.preventDefault()}
   />
   <img
     style:width={BUTTON_WIDTH * 0.8 + 'px'}
@@ -401,6 +404,8 @@
     src={startImg}
     class="absolute"
     alt="start button"
+    draggable="false"
+    on:contextmenu={(e) => e.preventDefault()}
   />
   <img
     bind:this={homeButton}
@@ -410,14 +415,18 @@
     style:right={PADDING + 'px'}
     style:top={PADDING + 'px'}
     class="absolute"
+    draggable="false"
+    on:contextmenu={(e) => e.preventDefault()}
   />
   <img
     bind:this={directionButton}
     src={directionImg}
     style:width={DIRECTION_WIDTH + 'px'}
     style:height={DIRECTION_HEIGHT + 'px'}
-    class="absolute top-[60%] -translate-y-1/2"
+    class="absolute top-[60%] -translate-y-1/2 select-none touch-pan-x touch-pan-y"
     alt="directionButton"
+    draggable="false"
+    on:contextmenu={(e) => e.preventDefault()}
   />
   <div
     style:width={BUTTON_WIDTH * 2 + 'px'}
@@ -431,9 +440,9 @@
       style:height={BUTTON_HEIGHT + 'px'}
       style:--height={BUTTON_WIDTH * 0.3 + 'px'}
       data-key="A"
-      class="col-start-5 relative col-end-9 row-start-2 row-end-6 beforeTag"
+      class="col-start-5 relative col-end-9 row-start-2 row-end-6 beforeTag select-none"
     >
-      <img class="w-full h-full" src={buttonImg} alt="aButton" />
+      <img class="w-full h-full select-none" src={buttonImg} alt="aButton" draggable="false" />
     </div>
     <div
       bind:this={bButton}
@@ -441,9 +450,9 @@
       style:height={BUTTON_HEIGHT + 'px'}
       style:--height={BUTTON_WIDTH * 0.3 + 'px'}
       data-key="B"
-      class="col-start-1 relative col-end-5 row-start-5 row-end-9 beforeTag"
+      class="col-start-1 relative col-end-5 row-start-5 row-end-9 beforeTag select-none"
     >
-      <img class="w-full h-full" alt="bButton" src={buttonImg} />
+      <img class="w-full h-full select-none" alt="bButton" src={buttonImg} draggable="false" />
     </div>
   </div>
 </div>
