@@ -4,27 +4,31 @@
     "title": "马戏团",
     "rom": "/roms/mxt/rom.nes",
     "cover": "/roms/mxt/cover.jpg",
-    "description": "/roms/mxt/description.txt"
+    "description": "/roms/mxt/description.txt",
+    "screens": ["/roms/mxt/cover.jpg"]
   },
   {
     "id": "rx",
     "title": "热血物语",
     "rom": "/roms/rx/rom.nes",
     "cover": "/roms/rx/cover.jpg",
-    "description": "/roms/rx/description.txt"
+    "description": "/roms/rx/description.txt",
+    "screens": ["/roms/rx/cover.jpg"]
   },
   {
     "id": "smtz",
     "title": "三目童子",
     "rom": "/roms/smtz/rom.nes",
     "cover": "/roms/smtz/cover.jpg",
-    "description": "/roms/smtz/description.txt"
+    "description": "/roms/smtz/description.txt",
+    "screens": ["/roms/smtz/cover.jpg"]
   },
   {
     "id": "wzq",
     "title": "五子棋",
     "rom": "/roms/wzq/rom.nes",
     "cover": "/roms/wzq/cover.jpg",
-    "description": "/roms/wzq/description.txt"
+    "description": "/roms/wzq/description.txt",
+    "screens": ["/roms/wzq/cover.jpg"]
   }
 ]

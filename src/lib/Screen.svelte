@@ -4,9 +4,12 @@
   import { KeyTrigger, ScreenTrigger } from '../event.ts'
   import Game from './Game.svelte'
   import Home from './Home.svelte'
+  import GameDetail from './GameDetail.svelte'
   let home, game
+  let detail
   let mode = 'home'
   let left = ''
+  let detailItem = null
   onMount(() => {
     KeyTrigger.subscribe({
       next: (e) => {
@@ -14,6 +17,8 @@
           home.onEvent(e)
         } else if (mode === 'game') {
           game.onEvent(e)
+        } else if (mode === 'detail') {
+          detail.onEvent(e)
         }
       },
     })
@@ -25,6 +30,10 @@
           if (e.action === 'start game') {
             game.startGame(e)
           }
+          detailItem = e
+        } else if (mode === 'detail') {
+          detailItem = e
+          left = `calc(0px - ${SCREEN_WIDTH * 2}px + .5rem)`
         } else if (mode === 'home') {
           left = '0px'
         }
@@ -41,6 +50,7 @@
   <div class="flex transition-all" style:transform="translateX({left})">
     <Home bind:this={home} />
     <Game bind:this={game} />
+    <GameDetail bind:this={detail} item={detailItem} />
   </div>
 </div>
 
