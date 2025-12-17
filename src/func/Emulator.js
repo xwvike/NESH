@@ -6,51 +6,199 @@ class Audio {
     this.onBufferUnderrun = onBufferUnderrun
     this.audioContext = null
     this.workletNode = null
+    this.gainNode = null
+    this.volume = 1
+    this.moduleLoaded = false
+    this.underrunCooldownMs = 120
+    this.lastUnderrunAt = 0
+    this.preferWorklet = false
+    this.useWorklet = false
+    this.processorNode = null
+    this.fallbackMaxSamples = 32768
+    this.fallbackCapacity = this.fallbackMaxSamples * 2
+    this.fallbackRing = new Float32Array(this.fallbackCapacity)
+    this.fallbackRead = 0
+    this.fallbackWrite = 0
+    this.fallbackSize = 0
+    this.unlocked = false
   }
 
   async start() {
-    if (!(window.AudioContext || window.webkitAudioContext)) {
-      console.error('Web Audio API is not supported in this browser')
-      return
-    }
+    // 首先在当前调用栈内尝试解锁音频，避免因等待异步加载导致用户手势丢失
+    this.unlock()
 
-    this.audioContext = new (window.AudioContext || window.webkitAudioContext)()
+    if (!this.audioContext) return
 
-    try {
-      await this.audioContext.audioWorklet.addModule('/js/audio-processor.js')
-      this.workletNode = new AudioWorkletNode(this.audioContext, 'audio-processor')
-
-      this.workletNode.port.onmessage = (event) => {
-        if (event.data.type === 'bufferUnderrun' && this.onBufferUnderrun) {
-          this.onBufferUnderrun(event.data.size, event.data.needed)
-        }
+    this.useWorklet = !!this.audioContext.audioWorklet && this.preferWorklet
+    if (this.useWorklet) {
+      await this.setupWorklet()
+    } else {
+      if (this.preferWorklet && !this.audioContext.audioWorklet) {
+        console.warn('AudioWorklet is not supported; falling back to ScriptProcessorNode')
       }
-
-      this.workletNode.connect(this.audioContext.destination)
-    } catch (error) {
-      console.error('Error setting up AudioWorklet:', error)
+      this.setupFallbackProcessor()
     }
+
+    await this.resume()
   }
 
   stop() {
     if (this.workletNode) {
+      this.workletNode.port.onmessage = null
       this.workletNode.disconnect()
       this.workletNode = null
     }
+    if (this.processorNode) {
+      this.processorNode.disconnect()
+      this.processorNode.onaudioprocess = null
+      this.processorNode = null
+    }
+    if (this.gainNode) {
+      this.gainNode.disconnect()
+      this.gainNode = null
+    }
     if (this.audioContext) {
-      this.audioContext.close().catch(console.error)
+      const ctx = this.audioContext
       this.audioContext = null
+      ctx.close().catch(console.error)
     }
   }
 
   writeSample(left, right) {
-    if (this.workletNode) {
+    if (this.useWorklet && this.workletNode) {
       this.workletNode.port.postMessage({ type: 'writeSample', left, right })
+    } else if (this.processorNode) {
+      this.pushFallback(left)
+      this.pushFallback(right)
     }
   }
 
   getSampleRate() {
     return this.audioContext ? this.audioContext.sampleRate : 44100
+  }
+
+  unlock() {
+    if (!(window.AudioContext || window.webkitAudioContext)) {
+      console.error('Web Audio API is not supported in this browser')
+      return
+    }
+    if (!this.audioContext) {
+      this.audioContext = new (window.AudioContext || window.webkitAudioContext)()
+      this.gainNode = this.audioContext.createGain()
+      this.gainNode.gain.value = this.volume
+    }
+    if (this.audioContext.state === 'suspended') {
+      // 不等待 Promise，确保在用户手势调用栈内触发
+      this.audioContext.resume().catch(console.error)
+    }
+    if (!this.unlocked && this.audioContext && this.gainNode) {
+      // 播放极短静音以满足部分浏览器的解锁要求
+      const buffer = this.audioContext.createBuffer(1, 1, this.audioContext.sampleRate)
+      const source = this.audioContext.createBufferSource()
+      source.buffer = buffer
+      source.connect(this.audioContext.destination)
+      source.start(0)
+      this.unlocked = true
+    }
+  }
+
+  async resume() {
+    if (this.audioContext && this.audioContext.state === 'suspended') {
+      await this.audioContext.resume()
+    }
+  }
+
+  setVolume(value) {
+    this.volume = Math.min(Math.max(value, 0), 1)
+    if (this.gainNode) {
+      this.gainNode.gain.value = this.volume
+    }
+  }
+
+  async setupWorklet() {
+    if (!this.audioContext || this.workletNode) return
+    try {
+      if (!this.moduleLoaded) {
+        await this.audioContext.audioWorklet.addModule('/js/audio-processor.js')
+        this.moduleLoaded = true
+      }
+      this.workletNode = new AudioWorkletNode(this.audioContext, 'audio-processor')
+      this.workletNode.port.onmessage = (event) => {
+        if (event.data.type === 'bufferUnderrun' && this.onBufferUnderrun) {
+          const now = performance.now()
+          if (now - this.lastUnderrunAt >= this.underrunCooldownMs) {
+            this.lastUnderrunAt = now
+            this.onBufferUnderrun(event.data.size, event.data.needed)
+          }
+        }
+      }
+      if (this.gainNode) {
+        this.workletNode.connect(this.gainNode)
+        this.gainNode.connect(this.audioContext.destination)
+      } else {
+        this.workletNode.connect(this.audioContext.destination)
+      }
+      this.workletNode.port.postMessage({
+        type: 'config',
+        bufferSize: 8192,
+      })
+    } catch (error) {
+      console.error('Error setting up AudioWorklet:', error)
+      this.useWorklet = false
+      this.setupFallbackProcessor()
+    }
+  }
+
+  setupFallbackProcessor() {
+    if (!this.audioContext || this.processorNode) return
+    const bufferSize = 2048
+    this.processorNode = this.audioContext.createScriptProcessor(bufferSize, 0, 2)
+    this.processorNode.onaudioprocess = (event) => {
+      const outputL = event.outputBuffer.getChannelData(0)
+      const outputR = event.outputBuffer.getChannelData(1)
+      const available = Math.floor(this.fallbackSize / 2)
+      if (available < bufferSize && this.onBufferUnderrun) {
+        const now = performance.now()
+        if (now - this.lastUnderrunAt >= this.underrunCooldownMs) {
+          this.lastUnderrunAt = now
+          this.onBufferUnderrun(this.fallbackSize, bufferSize * 2)
+        }
+      }
+      for (let i = 0; i < bufferSize; i++) {
+        if (this.fallbackSize >= 2) {
+          outputL[i] = this.popFallback()
+          outputR[i] = this.popFallback()
+        } else {
+          outputL[i] = 0
+          outputR[i] = 0
+        }
+      }
+    }
+    if (this.gainNode) {
+      this.processorNode.connect(this.gainNode)
+      this.gainNode.connect(this.audioContext.destination)
+    } else {
+      this.processorNode.connect(this.audioContext.destination)
+    }
+  }
+
+  pushFallback(value) {
+    this.fallbackRing[this.fallbackWrite] = value
+    this.fallbackWrite = (this.fallbackWrite + 1) % this.fallbackCapacity
+    if (this.fallbackSize < this.fallbackCapacity) {
+      this.fallbackSize++
+    } else {
+      // 覆盖最旧数据
+      this.fallbackRead = (this.fallbackRead + 1) % this.fallbackCapacity
+    }
+  }
+
+  popFallback() {
+    if (this.fallbackSize === 0) return 0
+    const value = this.fallbackRing[this.fallbackRead]
+    this.fallbackRead = (this.fallbackRead + 1) % this.fallbackCapacity
+    this.fallbackSize--
+    return value
   }
 }
 class Video {
@@ -85,7 +233,7 @@ class Video {
 
 export class Emulator {
   constructor(props) {
-    this.running = true
+    this.running = false
     this.interval = 1e3 / FPS
     this.lastFrameTime = false
     this.screen = props.screen
@@ -146,7 +294,9 @@ export class Emulator {
   }
   generateFrame() {
     this.nes.frame()
-    this.lastFrameTime += this.interval
+    if (typeof this.lastFrameTime === 'number') {
+      this.lastFrameTime += this.interval
+    }
   }
   writeFrame() {
     this.Video.writeBuffer()
@@ -164,9 +314,11 @@ export class Emulator {
     this.lastFrameTime = false
   }
   _requestAnimationFrame() {
+    if (!this.running) return
     this._requestID = window.requestAnimationFrame(this.onanimationframe)
   }
   onanimationframe(time) {
+    if (!this.running) return
     this._requestAnimationFrame()
     let excess = time % this.interval
     let newFrameTime = time - excess

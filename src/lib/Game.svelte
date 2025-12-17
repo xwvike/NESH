@@ -13,11 +13,14 @@
     })
   }
   export async function startGame(arg) {
+    // 在用户手势同步阶段立即解锁音频，后续异步不会丢失手势
+    emulator.Audio.unlock()
     let rom = await loadBinary(arg.url)
     emulator.loadRom(rom)
-    emulator.start()
+    await emulator.start()
   }
   export function continueGame() {
+    emulator.Audio.unlock()
     emulator.start()
   }
   export function onEvent(e) {

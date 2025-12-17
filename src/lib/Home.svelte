@@ -16,10 +16,11 @@
   }
   let current = 0
   let list = [
-    { title: 'mxt', url: '/roms/mxt.nes', cover: '' },
+    { title: '超级玛丽', url: '/roms/MARIO.NES', cover: '' },
+    { title: '马戏团', url: '/roms/mxt.nes', cover: '' },
+    { title: '热血物语', url: '/roms/rx.nes', cover: '' },
+    { title: '三目童子', url: '/roms/smtz.NES', cover: '' },
     { title: '五子棋', url: '/roms/wzq.nes', cover: '' },
-    { title: 'test', url: '', cover: '' },
-    { title: 'test', url: '', cover: '' },
   ]
   export function onEvent(e) {
     if (e.key === 'left') {

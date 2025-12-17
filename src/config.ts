@@ -2,9 +2,24 @@ const FPS = 60.098
 const NES_WIDTH = 256
 const NES_HEIGHT = 240
 const RATIO = NES_HEIGHT / NES_WIDTH
-const WIDTH = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth
-const HEIGHT =
-  window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight
+const BASE_WIDTH = 375
+const BASE_HEIGHT = 667
+const VIEWPORT_WIDTH =
+  window.innerWidth ||
+  document.documentElement.clientWidth ||
+  document.body.clientWidth ||
+  BASE_WIDTH
+const VIEWPORT_HEIGHT =
+  window.innerHeight ||
+  document.documentElement.clientHeight ||
+  document.body.clientHeight ||
+  BASE_HEIGHT
+const VIEWPORT_RATIO = VIEWPORT_HEIGHT / (VIEWPORT_WIDTH || 1)
+const MOBILE_RATIO_MIN = 1.2
+const MOBILE_RATIO_MAX = 2.2
+const IS_MOBILE_LIKE = VIEWPORT_RATIO >= MOBILE_RATIO_MIN && VIEWPORT_RATIO <= MOBILE_RATIO_MAX
+const WIDTH = IS_MOBILE_LIKE ? VIEWPORT_WIDTH : Math.min(BASE_WIDTH, VIEWPORT_WIDTH)
+const HEIGHT = IS_MOBILE_LIKE ? VIEWPORT_HEIGHT : Math.min(BASE_HEIGHT, VIEWPORT_HEIGHT)
 const PADDING = 20
 const SCREEN_WIDTH = WIDTH - PADDING * 2
 const SCREEN_HEIGHT = SCREEN_WIDTH * RATIO
@@ -23,6 +38,8 @@ export {
   FPS,
   CONTROLS_HEIGHT,
   CONTROLS_WIDTH,
+  BASE_WIDTH,
+  BASE_HEIGHT,
   NES_WIDTH,
   NES_HEIGHT,
   RATIO,
