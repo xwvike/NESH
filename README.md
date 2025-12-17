@@ -40,8 +40,5 @@ pnpm dev
 - Select：Shift
 - Home：Esc
 
-## 发布
-- 已配置 Vercel，默认 `pnpm build` 产物部署。
-
 ## 许可证
 - MIT License（见 LICENSE），请另行确认 ROM 版权合规。
