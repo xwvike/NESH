@@ -40,7 +40,11 @@
     try {
       const res = await fetch('/roms/index.json')
       if (!res.ok) throw new Error('load rom index failed')
-      list = await res.json()
+      const data = await res.json()
+      list = data.map((item) => ({
+        ...item,
+        cover: item.cover || '/roms/defaultCover.jpg',
+      }))
     } catch (err) {
       console.error(err)
       list = []
@@ -82,7 +86,15 @@
               ? 'border-4 border-[#ce28ae]'
               : ''} relative"
           >
-            <div class="rounded-sm bg-amber-100 w-full h-full"></div>
+            <div class="rounded-sm bg-amber-100 w-full h-full overflow-hidden">
+              <img
+                src={item.cover}
+                alt={item.title}
+                class="w-full h-full object-cover"
+                draggable="false"
+                on:contextmenu|preventDefault
+              />
+            </div>
             {#if index === current}
               <div class="text-[#ce28ae] absolute -top-7 left-1/2 -translate-x-1/2 w-full px-1">
                 <ScrollText>{item.title}</ScrollText>
