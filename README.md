@@ -49,4 +49,4 @@ pnpm dev
 - 已配置 Vercel，默认 `pnpm build` 产物部署。
 
 ## 许可证
-- 本仓库未声明许可证，使用前请确认 ROM 版权合规。
+- MIT License（见 LICENSE），请另行确认 ROM 版权合规。
